@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <meta charset="UTF-8">
+        <title>用户登录</title>
+
+        <link rel='stylesheet prefetch' href='/static/css/bootstrap.min.css'>
+        <link rel="stylesheet" href="/static/css/style.css">
+
+        <script type="text/javascript" src="/static/js/jquery-3.3.1.min.js"></script>
+        <script type="text/javascript" src="/static/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="/static/js/md5.min.js"></script>
+
+    </head>
+
+    <body>
+
+        <div class="wrapper">
+            <form class="form-signin" id="login_form" action="/authorize/" method="post" >
+                <h2 class="form-signin-heading">Please login</h2>
+                {{ if ne .Error "" }}
+                <h3>
+                    <code>{{.Error}}</code>
+                </h3>
+                {{end}}
+                <input type="hidden"  name="Callback" value="{{.Callback}}" />
+                <input type="hidden"  name="Salt" id="Salt" value="" />
+                <input type="text" class="form-control" name="Name" id="Name" placeholder="Email Address" required="" autofocus="" value="{{.Name}}" />
+                <input type="password" class="form-control" name="Password" id="Password" placeholder="Password" required="" value="{{.Password}}" />      
+                <button class="btn btn-lg btn-primary btn-block" type="submit">Login</button>   
+            </form>
+        </div>
+
+        <script>
+            $(function(){
+                $("form").submit(function(e){
+                    var timestamp=new Date().getTime();
+                    var passwd = md5($("#Password").val());
+                    console.log("password1111:"+passwd);
+                    passwd = md5(passwd + timestamp);
+                    console.log("password2222:"+passwd);
+                    $("#Salt").val(timestamp);
+                    $("#Password").val(passwd);
+                });
+            });
+
+        </script>
+
+    </body>
+
+</html>
+
