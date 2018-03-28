@@ -156,3 +156,15 @@ func (h *ResponseHeader) SetError(status int, message string) {
 	h.Status = status
 	h.Message = message
 }
+
+//InvalidRequest 返回因为请求参数错误导致的异常信息(400).
+func (h *ResponseHeader) InvalidRequest(format string, argv ...interface{}) {
+	h.Status = http.StatusBadRequest
+	h.Message = fmt.Sprintf(format, argv...)
+}
+
+//InternalError 返回因为内部错误导致的异常信息(500).
+func (h *ResponseHeader) InternalError(format string, argv ...interface{}) {
+	h.Status = http.StatusInternalServerError
+	h.Message = fmt.Sprintf(format, argv...)
+}
