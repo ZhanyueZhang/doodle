@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/dearcode/crab/http/server"
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 )
 
 type distributorLogs struct {

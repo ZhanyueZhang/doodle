@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/zssky/log"
+	"github.com/dearcode/crab/log"
 
 	"github.com/dearcode/doodle/repeater/config"
 )

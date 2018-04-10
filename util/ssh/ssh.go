@@ -9,9 +9,9 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
 	"github.com/pkg/sftp"
-	"github.com/zssky/log"
 	"golang.org/x/crypto/ssh"
 )
 

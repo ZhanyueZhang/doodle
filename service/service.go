@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/dearcode/crab/http/server"
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/doodle/service/debug"
 )
@@ -69,9 +69,9 @@ func (s *Service) Init() {
 	}
 
 	if *logFile != "" {
-		log.SetHighlighting(false)
-		log.SetRotateByDay()
-		log.SetOutputByName(*logFile)
+		log.SetColor(false)
+		log.SetRolling(true)
+		log.SetOutputFile(*logFile)
 	}
 
 	log.SetLevelByString(*logLevel)

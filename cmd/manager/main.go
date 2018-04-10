@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dearcode/crab/http/server"
-	"github.com/zssky/log"
+	"github.com/dearcode/crab/log"
 
 	"github.com/dearcode/doodle/manager"
 	"github.com/dearcode/doodle/manager/config"
@@ -30,9 +30,9 @@ func main() {
 	}
 
 	if !*debug {
-		log.SetOutputByName("./logs/manager.log")
-		log.SetHighlighting(false)
-		log.SetRotateByDay()
+		log.SetOutputFile("./logs/manager.log")
+		log.SetColor(false)
+		log.SetRolling(true)
 	}
 
 	manager.ServerInit()

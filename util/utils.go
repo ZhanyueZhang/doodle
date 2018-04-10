@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dearcode/crab/log"
 	"github.com/dearcode/crab/validation"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/doodle/meta"
 )

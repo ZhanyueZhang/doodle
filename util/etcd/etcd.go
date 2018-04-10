@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/coreos/etcd/clientv3"
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 )
 
 const (

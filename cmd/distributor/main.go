@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dearcode/crab/http/server"
-	"github.com/zssky/log"
+	"github.com/dearcode/crab/log"
 
 	"github.com/dearcode/doodle/distributor"
 	"github.com/dearcode/doodle/util"
@@ -32,9 +32,9 @@ func main() {
 	}
 
 	if !*debug {
-		log.SetOutputByName("./logs/distributor.log")
-		log.SetHighlighting(false)
-		log.SetRotateByDay()
+		log.SetOutputFile("./logs/distributor.log")
+		log.SetColor(false)
+		log.SetRolling(true)
 	}
 
 	if err := distributor.Init(*configPath); err != nil {

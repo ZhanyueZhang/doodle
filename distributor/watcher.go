@@ -10,8 +10,8 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/dearcode/crab/http/client"
 	"github.com/dearcode/crab/http/server"
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/doodle/distributor/config"
 	"github.com/dearcode/doodle/meta"
@@ -127,7 +127,7 @@ func (mc *managerClient) interfaceRegister(projectID, version int64, name, metho
 		Message string
 	}{}
 
-	if err := client.New(config.Distributor.Server.Timeout).PostJSON(url, nil, req, &resp); err != nil {
+	if err := client.New().Timeout(config.Distributor.Server.Timeout).PostJSON(url, nil, req, &resp); err != nil {
 		return errors.Annotatef(err, url)
 	}
 
@@ -146,7 +146,7 @@ const (
 
 func (w *watcher) parseDocument(backend string, app meta.MicroAPP) error {
 	url := fmt.Sprintf("http://%s:%d/document/", app.Host, app.Port)
-	buf, err := client.New(httpConnectTimeout).Get(url, nil, nil)
+	buf, err := client.New().Timeout(httpConnectTimeout).Get(url, nil, nil)
 	if err != nil {
 		return errors.Trace(err)
 	}

@@ -6,29 +6,29 @@ import (
 	"net/url"
 
 	"github.com/dearcode/crab/http/client"
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/doodle/rbac/meta"
 )
 
 func (c Client) get(url string) ([]byte, error) {
-	return client.New(c.timeout).Get(url, map[string]string{"Token": c.token}, nil)
+	return client.New().Timeout(c.timeout).Get(url, map[string]string{"Token": c.token}, nil)
 }
 
 //Post do post request.
 func (c Client) post(url string, body []byte) ([]byte, error) {
-	return client.New(c.timeout).POST(url, map[string]string{"Token": c.token, "Content-Type": "application/x-www-form-urlencoded"}, body)
+	return client.New().Timeout(c.timeout).Post(url, map[string]string{"Token": c.token, "Content-Type": "application/x-www-form-urlencoded"}, body)
 }
 
 //Put do pust request.
 func (c Client) put(url string, body []byte) ([]byte, error) {
-	return client.New(c.timeout).PUT(url, map[string]string{"Token": c.token}, body)
+	return client.New().Timeout(c.timeout).Put(url, map[string]string{"Token": c.token}, body)
 }
 
 //Delete do delete request.
 func (c Client) delete(url string) ([]byte, error) {
-	return client.New(c.timeout).DELETE(url, map[string]string{"Token": c.token}, nil)
+	return client.New().Timeout(c.timeout).Delete(url, map[string]string{"Token": c.token}, nil)
 }
 
 const (

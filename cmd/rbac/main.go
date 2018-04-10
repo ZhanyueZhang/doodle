@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/dearcode/crab/http/server"
-	"github.com/zssky/log"
+	"github.com/dearcode/crab/log"
 
 	"github.com/dearcode/doodle/rbac"
 	"github.com/dearcode/doodle/rbac/config"
@@ -30,9 +30,9 @@ func main() {
 	}
 
 	if !*debug {
-		log.SetOutputByName("./logs/rbac.log")
-		log.SetHighlighting(false)
-		log.SetRotateByDay()
+		log.SetOutputFile("./logs/rbac.log")
+		log.SetColor(false)
+		log.SetRolling(true)
 	}
 
 	if err := rbac.ServerInit(); err != nil {

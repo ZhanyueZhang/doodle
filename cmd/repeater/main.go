@@ -10,7 +10,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/zssky/log"
+	"github.com/dearcode/crab/log"
 
 	"github.com/dearcode/doodle/repeater"
 	"github.com/dearcode/doodle/repeater/config"
@@ -32,9 +32,9 @@ func main() {
 	}
 
 	if !*debug {
-		log.SetOutputByName("./logs/repeater.log")
-		log.SetHighlighting(false)
-		log.SetRotateByDay()
+		log.SetOutputFile("./logs/repeater.log")
+		log.SetColor(false)
+		log.SetRolling(true)
 	}
 
 	ln, err := net.Listen("tcp", *addr)

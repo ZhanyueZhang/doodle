@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/dearcode/crab/http/server"
-	"github.com/zssky/log"
+	"github.com/dearcode/crab/log"
 
 	"github.com/dearcode/doodle/service/debug"
 )

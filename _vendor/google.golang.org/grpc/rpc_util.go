@@ -125,7 +125,9 @@ func (d *gzipDecompressor) Type() string {
 type callInfo struct {
 	compressorType        string
 	failFast              bool
-	stream                *transport.Stream
+	headerMD              metadata.MD
+	trailerMD             metadata.MD
+	peer                  *peer.Peer
 	traceInfo             traceInfo // in trace.go
 	maxReceiveMessageSize *int
 	maxSendMessageSize    *int
@@ -170,9 +172,7 @@ func (o afterCall) after(c *callInfo)        { o(c) }
 // for a unary RPC.
 func Header(md *metadata.MD) CallOption {
 	return afterCall(func(c *callInfo) {
-		if c.stream != nil {
-			*md, _ = c.stream.Header()
-		}
+		*md = c.headerMD
 	})
 }
 
@@ -180,20 +180,16 @@ func Header(md *metadata.MD) CallOption {
 // for a unary RPC.
 func Trailer(md *metadata.MD) CallOption {
 	return afterCall(func(c *callInfo) {
-		if c.stream != nil {
-			*md = c.stream.Trailer()
-		}
+		*md = c.trailerMD
 	})
 }
 
 // Peer returns a CallOption that retrieves peer information for a
 // unary RPC.
-func Peer(p *peer.Peer) CallOption {
+func Peer(peer *peer.Peer) CallOption {
 	return afterCall(func(c *callInfo) {
-		if c.stream != nil {
-			if x, ok := peer.FromContext(c.stream.Context()); ok {
-				*p = *x
-			}
+		if c.peer != nil {
+			*peer = *c.peer
 		}
 	})
 }
@@ -504,6 +500,6 @@ const (
 )
 
 // Version is the current grpc version.
-const Version = "1.10.0-dev"
+const Version = "1.9.2"
 
 const grpcUA = "grpc-go/" + Version

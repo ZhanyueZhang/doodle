@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/dearcode/crab/http/server"
+	"github.com/dearcode/crab/log"
 	"github.com/dearcode/crab/orm"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/doodle/util"
 )

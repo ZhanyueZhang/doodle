@@ -27,6 +27,7 @@ import (
 	"google.golang.org/grpc/balancer"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/encoding"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/transport"
@@ -46,6 +47,10 @@ func recvResponse(ctx context.Context, dopts dialOptions, t transport.ClientTran
 			}
 		}
 	}()
+	c.headerMD, err = stream.Header()
+	if err != nil {
+		return
+	}
 	p := &parser{r: stream}
 	var inPayload *stats.InPayload
 	if dopts.copts.StatsHandler != nil {
@@ -79,6 +84,7 @@ func recvResponse(ctx context.Context, dopts dialOptions, t transport.ClientTran
 		// Fix the order if necessary.
 		dopts.copts.StatsHandler.HandleRPC(ctx, inPayload)
 	}
+	c.trailerMD = stream.Trailer()
 	return nil
 }
 
@@ -138,8 +144,6 @@ func sendRequest(ctx context.Context, dopts dialOptions, compressor Compressor, 
 
 // Invoke sends the RPC request on the wire and returns after response is
 // received.  This is typically called by generated code.
-//
-// All errors returned by Invoke are compatible with the status package.
 func (cc *ClientConn) Invoke(ctx context.Context, method string, args, reply interface{}, opts ...CallOption) error {
 	if cc.dopts.unaryInt != nil {
 		return cc.dopts.unaryInt(ctx, method, args, reply, cc, invoke, opts...)
@@ -265,7 +269,9 @@ func invoke(ctx context.Context, method string, args, reply interface{}, cc *Cli
 			}
 			return toRPCErr(err)
 		}
-		c.stream = stream
+		if peer, ok := peer.FromContext(stream.Context()); ok {
+			c.peer = peer
+		}
 		if c.traceInfo.tr != nil {
 			c.traceInfo.tr.LazyLog(&payload{sent: true, msg: args}, true)
 		}

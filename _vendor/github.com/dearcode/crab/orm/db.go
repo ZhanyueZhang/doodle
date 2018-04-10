@@ -3,9 +3,10 @@ package orm
 import (
 	"database/sql"
 	"fmt"
+	"strings"
+
 	//mysql
 	_ "github.com/go-sql-driver/mysql"
-	"strings"
 )
 
 // DB db instance.

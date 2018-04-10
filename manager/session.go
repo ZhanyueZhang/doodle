@@ -7,8 +7,8 @@ import (
 
 	"github.com/dearcode/crab/cache"
 	"github.com/dearcode/crab/http/client"
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/doodle/manager/config"
 )
@@ -43,7 +43,7 @@ func (s *sessionCache) verify(r *http.Request, token string) (*userinfo, error) 
 		Data    userinfo
 	}{}
 	url := fmt.Sprintf("%s?token=%s", config.Manager.SSO.VerifyURL, token)
-	buf, err := client.New(5).Get(url, nil, nil)
+	buf, err := client.New().Get(url, nil, nil)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}

@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/dearcode/crab/http/server"
+	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
-	"github.com/zssky/log"
 
 	"github.com/dearcode/doodle/rbac/config"
 	"github.com/dearcode/doodle/rbac/meta"

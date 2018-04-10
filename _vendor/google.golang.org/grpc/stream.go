@@ -30,6 +30,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/encoding"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/stats"
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/transport"
@@ -50,8 +51,6 @@ type StreamDesc struct {
 }
 
 // Stream defines the common interface a client or server stream has to satisfy.
-//
-// All errors returned from Stream are compatible with the status package.
 type Stream interface {
 	// Context returns the context for this stream.
 	Context() context.Context
@@ -254,7 +253,10 @@ func newClientStream(ctx context.Context, desc *StreamDesc, cc *ClientConn, meth
 		break
 	}
 
-	c.stream = s
+	// Set callInfo.peer object from stream's context.
+	if peer, ok := peer.FromContext(s.Context()); ok {
+		c.peer = peer
+	}
 	cs := &clientStream{
 		opts:   opts,
 		c:      c,
