@@ -41,7 +41,7 @@ func (a authorize) POST(w http.ResponseWriter, r *http.Request) {
 
 	var ac account
 
-	if err = orm.NewStmt(db, "account").
+	if err = orm.NewStmt(db, "account").SetLogger(log.GetLogger()).
 		Where("name='%v' and md5(concat(password, '%s')) = '%s'", a.Name, a.Salt, a.Password).
 		Query(&ac); err != nil {
 		a.Error = err.Error()

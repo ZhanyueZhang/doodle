@@ -2,11 +2,13 @@ package client
 
 import (
 	"bytes"
+	"compress/gzip"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/juju/errors"
@@ -23,11 +25,12 @@ type HTTPClient struct {
 }
 
 type StatusError struct {
-	Code int
+	Code    int
+	Message string
 }
 
 func (se *StatusError) Error() string {
-	return fmt.Sprintf("HTTP Status %v", se.Code)
+	return fmt.Sprintf("HTTP Status %v %s", se.Code, se.Message)
 }
 
 func (c *HTTPClient) dial(network, addr string) (net.Conn, error) {
@@ -108,13 +111,27 @@ func (c HTTPClient) do(method, url string, headers map[string]string, body []byt
 	}
 	defer resp.Body.Close()
 
+	c.logger.Errorf("url:%v, response header:%#v", url, resp.Header)
+
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
 
+	if strings.Contains(resp.Header.Get("Content-Encoding"), "gzip") || strings.Contains(resp.Header.Get("Content-Type"), "gzip") {
+		gr, err := gzip.NewReader(bytes.NewBuffer(data))
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+		defer gr.Close()
+		data, err = ioutil.ReadAll(gr)
+		if err != nil {
+			return nil, errors.Trace(err)
+		}
+	}
+
 	if resp.StatusCode != http.StatusOK {
-		return nil, errors.Trace(&StatusError{resp.StatusCode})
+		return nil, errors.Trace(&StatusError{Code: resp.StatusCode, Message: string(data)})
 	}
 
 	return data, nil

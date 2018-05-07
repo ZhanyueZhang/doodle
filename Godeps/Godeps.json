@@ -38,48 +38,52 @@
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/cache",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/config",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/http/client",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/http/server",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/log",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/meta",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/orm",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/util",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
 		},
 		{
 			"ImportPath": "github.com/dearcode/crab/validation",
-			"Comment": "v1.2.6-7-g0ee1e0e",
-			"Rev": "0ee1e0ec34b240233811caecdd3b5ac99476d93b"
+			"Comment": "v1.4.0-13-gc370809",
+			"Rev": "c3708099ca1b6914929963ff02ca3d27a6948330"
+		},
+		{
+			"ImportPath": "github.com/fatih/astrewrite",
+			"Rev": "9b34aed93587c369be3810b844a2f3eb6c25d2a9"
 		},
 		{
 			"ImportPath": "github.com/go-sql-driver/mysql",
@@ -210,6 +214,18 @@
 		{
 			"ImportPath": "golang.org/x/text/unicode/norm",
 			"Rev": "6eab0e8f74e86c598ec3b6fad4888e0c11482d48"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/ast/astutil",
+			"Rev": "c4b4e4b0fa4a67bbbfceacd5e484460d33fb87f5"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/buildutil",
+			"Rev": "c4b4e4b0fa4a67bbbfceacd5e484460d33fb87f5"
+		},
+		{
+			"ImportPath": "golang.org/x/tools/go/loader",
+			"Rev": "c4b4e4b0fa4a67bbbfceacd5e484460d33fb87f5"
 		},
 		{
 			"ImportPath": "google.golang.org/genproto/googleapis/rpc/status",
