@@ -1,6 +1,6 @@
 cmd := $(shell ls cmd/)
 
-all: init lint $(cmd) deinit
+all: lint $(cmd)
 
 GitHash := github.com/dearcode/doodle/util.GitHash
 GitTime := github.com/dearcode/doodle/util.GitTime
@@ -18,12 +18,6 @@ golint:
 
 megacheck:
 	go get honnef.co/go/tools/cmd/megacheck
-
-init:
-	if [ -d _vendor ]; then mv _vendor vendor; fi
-
-deinit:
-	if [ -d vendor ]; then mv vendor _vendor; fi
 
 lint: golint megacheck
 	for path in $(source); do golint "$$path..."; done;
