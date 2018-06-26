@@ -11,12 +11,12 @@ import (
 	"github.com/dearcode/crab/http/client"
 	"github.com/dearcode/crab/http/server"
 	"github.com/dearcode/crab/log"
+	"github.com/dearcode/crab/util"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/distributor/config"
 	"github.com/dearcode/doodle/meta"
 	"github.com/dearcode/doodle/meta/document"
-	"github.com/dearcode/doodle/util"
 	"github.com/dearcode/doodle/util/etcd"
 )
 
@@ -217,7 +217,7 @@ func (w *watcher) stop() {
 }
 
 func parseProjectID(key string) (int64, error) {
-	buf, err := util.AesDecrypt(key, config.Distributor.Server.SecretKey)
+	buf, err := util.AesDecrypt(key, []byte(config.Distributor.Server.SecretKey))
 	if err != nil {
 		return 0, errors.Trace(err)
 	}

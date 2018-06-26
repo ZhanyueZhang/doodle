@@ -1,8 +1,11 @@
 package manager
 
 import (
+	"github.com/dearcode/crab/http/client"
 	"github.com/dearcode/crab/http/server"
+	"github.com/dearcode/crab/log"
 	"github.com/dearcode/crab/orm"
+	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/manager/config"
 	"github.com/dearcode/doodle/util/rbac"
@@ -11,6 +14,7 @@ import (
 var (
 	rbacClient *rbac.Client
 	mdb        *orm.DB
+	httpClient *client.HTTPClient
 )
 
 // ServerInit 初始化HTTP接口.
@@ -22,10 +26,20 @@ func ServerInit() error {
 
 	rbacClient = rbac.New(config.Manager.RBAC.Host, config.Manager.RBAC.Token)
 
-	server.RegisterPath(&domain{}, "/domain")
-	server.RegisterPath(&account{}, "/account")
+	httpClient = client.New().SetLogger(log.GetLogger())
 
-	server.RegisterPrefix(&debug{}, "/debug/pprof/")
+	if err := server.RegisterPath(&domain{}, "/domain"); err != nil {
+		return errors.Trace(err)
+	}
+
+	if err := server.RegisterPath(&account{}, "/account"); err != nil {
+		return errors.Trace(err)
+	}
+
+	if err := server.RegisterPrefix(&debug{}, "/debug/pprof/"); err != nil {
+		return errors.Trace(err)
+	}
+
 	server.RegisterPrefix(&static{}, "/static/")
 	server.RegisterPrefix(&static{}, "/")
 

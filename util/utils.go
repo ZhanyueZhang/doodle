@@ -1,10 +1,6 @@
 package util
 
 import (
-	"bytes"
-	"crypto/aes"
-	"crypto/cipher"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -13,7 +9,6 @@ import (
 	"net/http"
 	"reflect"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/dearcode/crab/log"
@@ -91,69 +86,6 @@ func Request(method, url string, headers map[string]string, body io.Reader) ([]b
 	}
 
 	return DoRequest(req)
-}
-
-// AesEncrypt aes 加密, 这里会自动填充key，所以没有错误返回.
-func AesEncrypt(encodeStr string, keyStr string) string {
-	encodeBytes := []byte(encodeStr)
-	key := []byte(keyStr)
-	key = append(key, []byte(strings.Repeat("\x00", 16-len(key)%16))...)
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		log.Errorf("key:%v, err:%v", key, err)
-		return ""
-	}
-	log.Debugf("key:%v\n", key)
-	blockSize := block.BlockSize()
-	encodeBytes = PKCS5Padding(encodeBytes, blockSize)
-	blockMode := cipher.NewCBCEncrypter(block, key[:blockSize])
-	crypted := make([]byte, len(encodeBytes))
-	blockMode.CryptBlocks(crypted, encodeBytes)
-
-	return base64.StdEncoding.EncodeToString(crypted)
-}
-
-// AesDecrypt aes 解密.
-func AesDecrypt(decodeStr string, keyStr string) ([]byte, error) {
-	decodeBytes, err := base64.StdEncoding.DecodeString(decodeStr)
-	if err != nil {
-		return nil, err
-	}
-	key := []byte(keyStr)
-	key = append(key, []byte(strings.Repeat("\x00", 16-len(key)%16))...)
-	block, err := aes.NewCipher(key)
-	if err != nil {
-		return nil, err
-	}
-	blockSize := block.BlockSize()
-	blockMode := cipher.NewCBCDecrypter(block, key[:blockSize])
-	origData := make([]byte, len(decodeBytes))
-	blockMode.CryptBlocks(origData, decodeBytes)
-	origData, err = PKCS5UnPadding(origData)
-	if err != nil {
-		return nil, err
-	}
-
-	return origData, nil
-}
-
-// PKCS5Padding pkcs5 添加数据.
-func PKCS5Padding(ciphertext []byte, blockSize int) []byte {
-	padding := blockSize - len(ciphertext)%blockSize
-	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
-	return append(ciphertext, padtext...)
-}
-
-// PKCS5UnPadding pkcs5 删除数据.
-func PKCS5UnPadding(origData []byte) ([]byte, error) {
-	length := len(origData)
-
-	if length <= 0 {
-		return nil, fmt.Errorf("PKCS5Padding len(origData) <= 0 error")
-	}
-
-	unpadding := int(origData[length-1])
-	return origData[:(length - unpadding)], nil
 }
 
 //DecodeRequestValue 解析request中数据.

@@ -52,7 +52,7 @@ func (p *service) GET(w http.ResponseWriter, r *http.Request) {
 		Page  int    `json:"offset"`
 		Size  int    `json:"limit"`
 	}{}
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -122,7 +122,7 @@ func (p *service) DELETE(w http.ResponseWriter, r *http.Request) {
 
 func (p *service) POST(w http.ResponseWriter, r *http.Request) {
 	vars := meta.Service{}
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -197,7 +197,7 @@ func (p *service) PUT(w http.ResponseWriter, r *http.Request) {
 		Version int    `json:"version"`
 		Comment string `json:"comment"  valid:"Required"`
 	}{}
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())

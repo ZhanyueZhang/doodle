@@ -68,7 +68,7 @@ func (v *variable) GET(w http.ResponseWriter, r *http.Request) {
 		Size        int    `json:"limit"`
 	}{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -133,7 +133,7 @@ func (v *variable) DELETE(w http.ResponseWriter, r *http.Request) {
 		ID int64 `json:"id"`
 	}{}
 
-	_, err := session.User(r)
+	_, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())

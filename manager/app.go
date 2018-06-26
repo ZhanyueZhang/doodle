@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/dearcode/crab/log"
+	cu "github.com/dearcode/crab/util"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/meta"
@@ -129,7 +130,7 @@ func (a *app) GET(w http.ResponseWriter, r *http.Request) {
 		Page  int    `json:"offset"`
 		Size  int    `json:"limit"`
 	}{}
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -213,7 +214,7 @@ func (a *app) DELETE(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *app) POST(w http.ResponseWriter, r *http.Request) {
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -246,7 +247,12 @@ func (a *app) POST(w http.ResponseWriter, r *http.Request) {
 	buf := make([]byte, 8)
 	binary.PutVarint(buf, id)
 
-	token := util.AesEncrypt(string(buf), util.AesKey)
+	token, err := cu.AesEncrypt(buf, []byte(util.AesKey))
+	if err != nil {
+		log.Errorf("AesEncrypt req:%+v, error:%s", r, errors.ErrorStack(err))
+		util.SendResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 
 	if err = updateAppToken(id, token); err != nil {
 		log.Errorf("updateAppToken req:%+v, error:%s", r, errors.ErrorStack(err))
@@ -267,7 +273,7 @@ func (a *app) PUT(w http.ResponseWriter, r *http.Request) {
 		Email   string `json:"email" valid:"Email"`
 		Comment string `json:"comment"  valid:"Required"`
 	}{}
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())

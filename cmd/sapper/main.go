@@ -4,8 +4,9 @@ import (
 	"flag"
 	"fmt"
 
-	repeaterConf "github.com/dearcode/doodle/repeater/config"
-	"github.com/dearcode/doodle/util"
+	"github.com/dearcode/crab/util"
+
+	"github.com/dearcode/doodle/repeater/config"
 )
 
 var (
@@ -14,11 +15,11 @@ var (
 )
 
 func parseServiceKey(key string) (int64, error) {
-	if err := repeaterConf.Load(); err != nil {
+	if err := config.Load(); err != nil {
 		return 0, nil
 	}
 
-	buf, err := util.AesDecrypt(key, repeaterConf.Repeater.Server.SecretKey)
+	buf, err := util.AesDecrypt(key, []byte(config.Repeater.Server.SecretKey))
 	if err != nil {
 		return 0, err
 	}

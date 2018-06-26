@@ -160,7 +160,7 @@ type interfaceAction struct {
 }
 
 func (i *interfaceAction) GET(w http.ResponseWriter, r *http.Request) {
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -251,7 +251,7 @@ func (i *interfaceAction) DELETE(w http.ResponseWriter, r *http.Request) {
 func (i *interfaceAction) POST(w http.ResponseWriter, r *http.Request) {
 	vars := iface{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())

@@ -34,7 +34,7 @@ type cluster struct {
 }
 
 func (c *cluster) GET(w http.ResponseWriter, r *http.Request) {
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -69,7 +69,7 @@ func (c *cluster) POST(w http.ResponseWriter, r *http.Request) {
 		Comment string `json:"comment"`
 	}{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -110,7 +110,7 @@ func (c *cluster) DELETE(w http.ResponseWriter, r *http.Request) {
 		ID int64 `json:"id"`
 	}{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -151,7 +151,7 @@ func (i *clusterInfo) GET(w http.ResponseWriter, r *http.Request) {
 		ID int64 `json:"id"`
 	}{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -191,7 +191,7 @@ func (n *clusterNode) GET(w http.ResponseWriter, r *http.Request) {
 		ID int64 `json:"cluster_id"`
 	}{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -227,7 +227,7 @@ func (n *clusterNode) DELETE(w http.ResponseWriter, r *http.Request) {
 		ID int64 `json:"id"`
 	}{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -265,7 +265,7 @@ func (n *clusterNode) POST(w http.ResponseWriter, r *http.Request) {
 		Comment   string `json:"comment"`
 	}{}
 
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())

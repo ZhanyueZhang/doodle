@@ -8,9 +8,9 @@ import (
 	"github.com/dearcode/crab/http/server"
 	"github.com/dearcode/crab/log"
 	"github.com/dearcode/crab/orm"
+	"github.com/dearcode/crab/util"
 
 	"github.com/dearcode/doodle/distributor/config"
-	"github.com/dearcode/doodle/util"
 	"github.com/dearcode/doodle/util/etcd"
 )
 
@@ -71,5 +71,9 @@ func (p *project) GET(w http.ResponseWriter, r *http.Request) {
 
 func (p *project) key() string {
 	s := fmt.Sprintf("%x.%v", p.ID, time.Now().UnixNano())
-	return util.AesEncrypt(s, config.Distributor.Server.SecretKey)
+	ns, err := util.AesEncrypt([]byte(s), []byte(config.Distributor.Server.SecretKey))
+	if err != nil {
+		panic(err.Error())
+	}
+	return ns
 }

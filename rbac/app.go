@@ -7,6 +7,7 @@ import (
 
 	"github.com/dearcode/crab/http/server"
 	"github.com/dearcode/crab/log"
+	cu "github.com/dearcode/crab/util"
 
 	"github.com/dearcode/doodle/rbac/config"
 	"github.com/dearcode/doodle/rbac/meta"
@@ -97,7 +98,10 @@ func AppAdd(name, email, comments string) (int64, string, error) {
 	buf := make([]byte, 8)
 	binary.PutVarint(buf, id)
 
-	token := util.AesEncrypt(string(buf), config.RBAC.Server.Key)
+	token, err := cu.AesEncrypt(buf, []byte(config.RBAC.Server.Key))
+	if err != nil {
+		return 0, "", err
+	}
 
 	return id, token, updateAppToken(id, token)
 }

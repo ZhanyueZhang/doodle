@@ -94,13 +94,22 @@ func (c Client) GetUserResources(email string) ([]meta.Resource, error) {
 		return nil, errors.Trace(err)
 	}
 
-	var res []meta.Resource
-	if err = json.Unmarshal(buf, &res); err != nil {
+	resp := struct {
+		Status  int
+		Data    []meta.Resource
+		Message string
+	}{}
+
+	if err = json.Unmarshal(buf, &resp); err != nil {
 		log.Infof("Unmarshal error:%v, buf:%v", err, string(buf))
 		return nil, errors.Trace(err)
 	}
 
-	return res, nil
+	if resp.Status != 0 {
+		return nil, errors.Errorf(resp.Message)
+	}
+
+	return resp.Data, nil
 }
 
 //GetUserResourceIDs 根据用户邮箱，获取关联的资源ID.
@@ -347,14 +356,22 @@ func (c Client) GetResourceRolesUnrelated(resID int64, email string) ([]meta.Rol
 
 	log.Infof("get role resp:%s", buf)
 
-	var rs []meta.Role
+	r := struct {
+		Status  int
+		Message string
+		Data    []meta.Role
+	}{}
 
-	if err = json.Unmarshal(buf, &rs); err != nil {
+	if err = json.Unmarshal(buf, &r); err != nil {
 		log.Errorf("Get:%v Unmarshal error:%v, buf:%s", url, err, buf)
 		return nil, errors.Trace(err)
 	}
 
-	return rs, nil
+	if r.Status != 0 {
+		return nil, errors.Errorf(r.Message)
+	}
+
+	return r.Data, nil
 }
 
 // GetRole 获取角色信息.
@@ -401,13 +418,22 @@ func (c Client) GetRoleUsers(roleID int64) ([]meta.RoleUser, error) {
 
 	log.Infof("get roleUser resp:%v", string(buf))
 
-	ru := []meta.RoleUser{}
-	if err = json.Unmarshal(buf, &ru); err != nil {
+	resp := struct {
+		Status  int
+		Message string
+		Data    []meta.RoleUser
+	}{}
+
+	if err = json.Unmarshal(buf, &resp); err != nil {
 		log.Errorf("Get:%v Unmarshal error:%v, buf:%s", url, err, buf)
 		return nil, errors.Trace(err)
 	}
 
-	return ru, nil
+	if resp.Status != 0 {
+		return nil, fmt.Errorf(resp.Message)
+	}
+
+	return resp.Data, nil
 }
 
 //GetUserRoles 根据邮件获取关联角色信息.
@@ -421,13 +447,22 @@ func (c Client) GetUserRoles(email string) ([]meta.RoleUser, error) {
 
 	log.Infof("get roleUser resp:%v", string(buf))
 
-	ru := []meta.RoleUser{}
-	if err = json.Unmarshal(buf, &ru); err != nil {
+	resp := struct {
+		Status  int
+		Message string
+		Data    []meta.RoleUser
+	}{}
+
+	if err = json.Unmarshal(buf, &resp); err != nil {
 		log.Errorf("Get:%v Unmarshal error:%v, buf:%s", url, err, buf)
 		return nil, errors.Trace(err)
 	}
 
-	return ru, nil
+	if resp.Status != 0 {
+		return nil, fmt.Errorf(resp.Message)
+	}
+
+	return resp.Data, nil
 }
 
 //PostRoleUser 给角色添加用户.

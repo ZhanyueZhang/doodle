@@ -27,15 +27,15 @@ func (a authorize) GET(w http.ResponseWriter, r *http.Request) {
 
 func (a authorize) POST(w http.ResponseWriter, r *http.Request) {
 	if err := server.ParseFormVars(r, &a); err != nil {
-		a.Error = err.Error()
-		execute(w, a)
+		log.Errorf("parse form error")
+		server.Abort(w, "parse form error")
 		return
 	}
 
 	db, err := mdb.GetConnection()
 	if err != nil {
-		a.Error = err.Error()
-		execute(w, a)
+		log.Errorf("connect db error")
+		server.Abort(w, "connect db error")
 		return
 	}
 
@@ -44,18 +44,13 @@ func (a authorize) POST(w http.ResponseWriter, r *http.Request) {
 	if err = orm.NewStmt(db, "account").SetLogger(log.GetLogger()).
 		Where("name='%v' and md5(concat(password, '%s')) = '%s'", a.Name, a.Salt, a.Password).
 		Query(&ac); err != nil {
-		a.Error = err.Error()
 		log.Errorf("query account error:%v", err)
-		execute(w, a)
+		server.Abort(w, "%s", err.Error())
 		return
 	}
 
 	token := ac.token()
 
-	w.Header().Add("X-Authorize-Token", token)
-
-	log.Debugf("user:%v, token:%v", a.Name, token)
-
-	w.Header().Add("Location", a.Callback)
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	log.Debugf("user:%s, token:%s", a.Name, token)
+	server.SendResponseData(w, token)
 }

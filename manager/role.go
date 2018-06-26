@@ -17,7 +17,7 @@ func (ri *roleInfo) GET(w http.ResponseWriter, r *http.Request) {
 	vars := struct {
 		RoleID int64 `json:"role_id"`
 	}{}
-	_, err := session.User(r)
+	_, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -54,7 +54,7 @@ func (r *role) GET(w http.ResponseWriter, req *http.Request) {
 		Email      string `json:"email"`
 	}{}
 
-	u, err := session.User(req)
+	u, err := session.User(w, req)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), req)
 		server.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -85,7 +85,7 @@ func (r *role) GET(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *role) POST(w http.ResponseWriter, req *http.Request) {
-	u, err := session.User(req)
+	u, err := session.User(w, req)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), req)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -115,7 +115,7 @@ func (r *role) POST(w http.ResponseWriter, req *http.Request) {
 }
 
 func (r *role) PUT(w http.ResponseWriter, req *http.Request) {
-	u, err := session.User(req)
+	u, err := session.User(w, req)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), req)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -230,7 +230,7 @@ type userRole struct {
 }
 
 func (ur *userRole) GET(w http.ResponseWriter, r *http.Request) {
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())
@@ -288,7 +288,7 @@ func (r *role) DELETE(w http.ResponseWriter, req *http.Request) {
 
 //onRoleUserDelete 删除角色中的用户
 func (ru *roleUser) DELETE(w http.ResponseWriter, r *http.Request) {
-	_, err := session.User(r)
+	_, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())

@@ -17,7 +17,7 @@ type resource struct {
 
 // GET 根据条件查询管理组.
 func (res *resource) GET(w http.ResponseWriter, r *http.Request) {
-	u, err := session.User(r)
+	u, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("session.User error:%v, req:%v", errors.ErrorStack(err), r)
 		util.SendResponse(w, http.StatusBadRequest, err.Error())

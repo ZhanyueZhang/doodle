@@ -10,6 +10,7 @@ import (
 
 	"github.com/dearcode/crab/cache"
 	"github.com/dearcode/crab/log"
+	cu "github.com/dearcode/crab/util"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/meta"
@@ -123,7 +124,7 @@ const (
 )
 
 func (dc *dbCache) getApp(token string) (*meta.Application, error) {
-	buf, err := util.AesDecrypt(token, util.AesKey)
+	buf, err := cu.AesDecrypt(token, []byte(util.AesKey))
 	if err != nil {
 		return nil, errors.Annotatef(errInvalidToken, err.Error())
 	}

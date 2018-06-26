@@ -1,12 +1,10 @@
 package manager
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/dearcode/crab/cache"
-	"github.com/dearcode/crab/http/client"
 	"github.com/dearcode/crab/log"
 	"github.com/juju/errors"
 
@@ -26,11 +24,14 @@ func newSession() *sessionCache {
 	return &sessionCache{cache: cache.NewCache(sessionTimeout)}
 }
 
-//getToken 读取用户cookie中token.
 func (s *sessionCache) getToken(r *http.Request) (string, error) {
+	if token := r.URL.Query().Get("token"); token != "" {
+		return token, nil
+	}
+
 	c, err := r.Cookie(config.Manager.SSO.Key)
 	if err != nil {
-		return "", err
+		return "", errors.Annotatef(err, "key:%s", config.Manager.SSO.Key)
 	}
 	return c.Value, nil
 }
@@ -42,13 +43,9 @@ func (s *sessionCache) verify(r *http.Request, token string) (*userinfo, error) 
 		Message string
 		Data    userinfo
 	}{}
-	url := fmt.Sprintf("%s?token=%s", config.Manager.SSO.VerifyURL, token)
-	buf, err := client.New().Get(url, nil, nil)
-	if err != nil {
-		return nil, errors.Trace(err)
-	}
 
-	if err = json.Unmarshal(buf, &resp); err != nil {
+	url := fmt.Sprintf("%s?token=%s", config.Manager.SSO.VerifyURL, token)
+	if err := httpClient.GetJSON(url, nil, &resp); err != nil {
 		return nil, errors.Trace(err)
 	}
 
@@ -83,7 +80,7 @@ func (u *userinfo) loadInfo() error {
 	return nil
 }
 
-func (s *sessionCache) User(r *http.Request) (*userinfo, error) {
+func (s *sessionCache) User(w http.ResponseWriter, r *http.Request) (*userinfo, error) {
 	token, err := s.getToken(r)
 	if err != nil {
 		return nil, errors.Trace(err)
@@ -100,6 +97,9 @@ func (s *sessionCache) User(r *http.Request) (*userinfo, error) {
 	if err != nil {
 		return nil, errors.Trace(err)
 	}
+
+	cookie := http.Cookie{Name: config.Manager.SSO.Key, Value: token, Path: "/"}
+	http.SetCookie(w, &cookie)
 
 	log.Debugf("userinfo:%+v", user)
 

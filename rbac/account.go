@@ -9,10 +9,10 @@ import (
 	"github.com/dearcode/crab/http/server"
 	"github.com/dearcode/crab/log"
 	"github.com/dearcode/crab/orm"
+	"github.com/dearcode/crab/util"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/rbac/config"
-	"github.com/dearcode/doodle/util"
 )
 
 type account struct {
@@ -24,11 +24,16 @@ type account struct {
 //token 直接返回urlencode之后的数据，方便调试
 func (a account) token() string {
 	s := fmt.Sprintf("%d.%d", a.ID, time.Now().Unix())
-	return url.QueryEscape(util.AesEncrypt(s, config.RBAC.Server.Key))
+	nk, err := util.AesEncrypt([]byte(s), []byte(config.RBAC.Server.Key))
+	if err != nil {
+		panic(err.Error())
+	}
+
+	return url.QueryEscape(nk)
 }
 
 func (a account) parseToken(token string) (int64, time.Time, error) {
-	s, err := util.AesDecrypt(token, config.RBAC.Server.Key)
+	s, err := util.AesDecrypt(token, []byte(config.RBAC.Server.Key))
 	if err != nil {
 		return 0, time.Time{}, errors.Trace(err)
 	}

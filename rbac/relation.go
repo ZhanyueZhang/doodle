@@ -83,7 +83,7 @@ func (rr *rbacRoleResource) GET(w http.ResponseWriter, r *http.Request) {
 
 	log.Infof("vars:%+v", vars)
 	if vars.API == 1 {
-		server.SendData(w, rs)
+		server.SendResponseData(w, rs)
 		return
 	}
 
@@ -131,7 +131,7 @@ func (ru *rbacRoleUser) GET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if vars.Query == 0 {
-		server.SendData(w, rs)
+		server.SendResponseData(w, rs)
 		return
 	}
 	server.SendRows(w, total, rs)
@@ -483,7 +483,7 @@ func (ur *userResource) GET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if len(result) == 0 {
-		server.SendData(w, []meta.Resource{})
+		server.SendResponseData(w, []meta.Resource{})
 		return
 	}
 
@@ -494,7 +494,7 @@ func (ur *userResource) GET(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	server.SendData(w, res)
+	server.SendResponseData(w, res)
 }
 
 //DELETE 删除关联.
@@ -590,7 +590,7 @@ func (ur *userRole) GET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if vars.Query == 0 {
-		server.SendData(w, rs)
+		server.SendResponseData(w, rs)
 		return
 	}
 
@@ -637,7 +637,7 @@ func (rru *resourceRolesUnrelated) GET(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if vars.Query == 0 {
-		server.SendData(w, rs)
+		server.SendResponseData(w, rs)
 		return
 	}
 

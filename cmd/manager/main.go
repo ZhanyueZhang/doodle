@@ -33,9 +33,12 @@ func main() {
 		log.SetOutputFile("./logs/manager.log")
 		log.SetColor(false)
 		log.SetRolling(true)
+		log.SetLevel(log.LogDebug)
 	}
 
-	manager.ServerInit()
+	if err := manager.ServerInit(); err != nil {
+		panic(err.Error())
+	}
 
 	ln, err := server.Start(*addr)
 	if err != nil {

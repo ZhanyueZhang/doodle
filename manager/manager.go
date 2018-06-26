@@ -23,7 +23,7 @@ type account struct {
 
 //GET 获取用户帐号信息
 func (a *account) GET(w http.ResponseWriter, r *http.Request) {
-	i, err := session.User(r)
+	i, err := session.User(w, r)
 	if err != nil {
 		log.Errorf("get session user error:%v", errors.ErrorStack(err))
 		util.SendResponse(w, http.StatusInternalServerError, err.Error())
@@ -52,6 +52,7 @@ type static struct {
 
 //GET 静态文件
 func (s *static) GET(w http.ResponseWriter, r *http.Request) {
+	session.User(w, r)
 	//	w.Header().Add("Cache-control", "no-store")
 	path := fmt.Sprintf("%s%s", config.Manager.Server.WebPath, r.URL.Path)
 	http.ServeFile(w, r, path)
