@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"reflect"
 	"strings"
 	"syscall"
@@ -94,12 +95,8 @@ func (s *Service) Register(obj interface{}) error {
 		pkg = t.Elem().PkgPath()
 	}
 
-	pkg = strings.TrimPrefix(pkg, debug.Project)
-	if pkg == "main" {
-		pkg = "/main"
-	}
-
-	url := fmt.Sprintf("%s/%s/", pkg, name)
+	pkg = path.Base(pkg)
+	url := fmt.Sprintf("/%s/%s/", pkg, name)
 	log.Debugf("url:%v", url)
 
 	for _, k := range []string{"Get", "Post", "Put", "Delete"} {
