@@ -9,7 +9,7 @@ import (
 var (
 	// RBAC 配置信息.
 	RBAC       rbacConfig
-	configPath = flag.String("c", "./config/rbac.ini", "config file")
+	configPath = flag.String("rbac_cfg", "./config/rbac.ini", "config file")
 )
 
 type serverConfig struct {

@@ -39,12 +39,19 @@ func (a *account) GET(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf)
 }
 
-type domain struct {
+type serverCfg struct {
 }
 
 //onDomainGet 获取配置文件中域名
-func (d *domain) GET(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(config.Manager.Server.Domain))
+func (c *serverCfg) GET(w http.ResponseWriter, r *http.Request) {
+	resp := struct {
+		Domain string
+		SSOURL string
+	}{
+		Domain: config.Manager.Server.Domain,
+		SSOURL: config.Manager.SSO.URL,
+	}
+	util.SendResponseJSON(w, resp)
 }
 
 type static struct {
@@ -52,7 +59,10 @@ type static struct {
 
 //GET 静态文件
 func (s *static) GET(w http.ResponseWriter, r *http.Request) {
-	session.User(w, r)
+	_, err := session.User(w, r)
+	if err != nil {
+		log.Errorf("%v", errors.ErrorStack(err))
+	}
 	//	w.Header().Add("Cache-control", "no-store")
 	path := fmt.Sprintf("%s%s", config.Manager.Server.WebPath, r.URL.Path)
 	http.ServeFile(w, r, path)

@@ -1,6 +1,6 @@
 cmd := $(shell ls cmd/)
 
-all: lint $(cmd)
+all: $(cmd)
 
 GitHash := github.com/dearcode/doodle/util.GitHash
 GitTime := github.com/dearcode/doodle/util.GitTime

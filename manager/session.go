@@ -45,6 +45,7 @@ func (s *sessionCache) verify(r *http.Request, token string) (*userinfo, error) 
 	}{}
 
 	url := fmt.Sprintf("%s?token=%s", config.Manager.SSO.VerifyURL, token)
+	log.Debugf("url:%v", url)
 	if err := httpClient.GetJSON(url, nil, &resp); err != nil {
 		return nil, errors.Trace(err)
 	}

@@ -38,7 +38,7 @@ func PrintVersion() {
 }
 
 const (
-	backendTimeout = time.Second * 15
+	backendTimeout = time.Minute
 )
 
 // DoRequest 直接发送请求

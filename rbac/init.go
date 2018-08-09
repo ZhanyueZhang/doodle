@@ -10,7 +10,7 @@ import (
 	"github.com/dearcode/crab/http/server"
 	"github.com/dearcode/crab/log"
 	"github.com/dearcode/crab/orm"
-	"github.com/dearcode/crab/util"
+	"github.com/dearcode/crab/util/aes"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/rbac/config"
@@ -50,12 +50,12 @@ func ServerInit() error {
 
 func parseToken(r *http.Request) (int64, error) {
 	token := r.Header.Get("token")
-	buf, err := util.AesDecrypt(token, []byte(config.RBAC.Server.Key))
+	buf, err := aes.Decrypt(token, config.RBAC.Server.Key)
 	if err != nil {
 		return 0, errors.Annotatef(errInvalidToken, "token:%v, error:%v", token, err.Error())
 	}
 
-	id, n := binary.Varint(buf)
+	id, n := binary.Varint([]byte(buf))
 	if n < 1 {
 		return 0, errors.Errorf("invalid token %s", token)
 	}

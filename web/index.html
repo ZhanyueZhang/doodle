@@ -96,9 +96,10 @@
 
         <script>
             var domain = "";
+            var ssoURL = "";
 
             function logout() {
-                location.href="http://ssa.mailchina.org/sso/logout?ReturnUrl="+location.href;
+                location.href=ssoURL + "/logout?ReturnUrl="+location.href;
             }
 
             function loadAccount() {
@@ -109,7 +110,7 @@
                     async: false,
                     success: function(data,status) { 
                         if (data.Status != 0) {
-                            location.href="http://ssa.mailchina.org/sso/login?ReturnUrl="+location.href;
+                            location.href= ssoURL+"/login?ReturnUrl="+location.href;
                             return
                         }
                         account = data;
@@ -124,13 +125,14 @@
                 });
             }
 
-            function loadDomain() {
+            function loadServerConfig() {
                 $.ajax({
                     type: "GET",
-                    url: "domain",
+                    url: "config",
                     async: false,
                     success: function(data,status) { 
-                        domain = data;
+                        domain = status.Domain;
+                        ssoURL = status.SSOURL;
                     },
                     error: function(req, data, error) { 
                         showMessage("<h3>"+req.responseText+"</h3>");
@@ -168,8 +170,9 @@
             $(function (){
                 $("#common").load("common.html", function() {
 
+                    loadServerConfig();
+
                     loadAccount();
-                    loadDomain();
 
                     url = gatePageUrl();
 

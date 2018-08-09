@@ -31,6 +31,7 @@ type dbConfig struct {
 }
 
 type ssoConfig struct {
+	URL       string
 	Domain    string
 	VerifyURL string
 	Key       string

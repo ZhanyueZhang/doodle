@@ -10,7 +10,7 @@ import (
 
 	"github.com/dearcode/crab/cache"
 	"github.com/dearcode/crab/log"
-	cu "github.com/dearcode/crab/util"
+	"github.com/dearcode/crab/util/aes"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/meta"
@@ -101,7 +101,7 @@ func (dc *dbCache) conectDB() error {
 		return errors.Trace(err)
 	}
 
-	if dc.instStats, err = dc.dbc.Prepare("insert into stats (iface_id, app_id, cnt, cost, event_time) values (?,?,?,?,?) ON DUPLICATE KEY UPDATE cnt = cnt + ?, cost =  cost + ?"); err != nil {
+	if dc.instStats, err = dc.dbc.Prepare("insert into stats (iface_id, app_id, cnt, err, cost, event_time) values (?,?,?,?,?,?) ON DUPLICATE KEY UPDATE cnt = cnt + ?, cost =  cost + ?"); err != nil {
 		return errors.Trace(err)
 	}
 
@@ -113,10 +113,11 @@ func (dc *dbCache) conectDB() error {
 }
 
 var (
-	errInvalidPath  = errors.New("invalid path")
-	errInvalidToken = errors.New("invalid token")
-	errNotFound     = errors.New("not found")
-	errForbidden    = errors.New("forbidden")
+	errInvalidPath   = errors.New("invalid path")
+	errInvalidToken  = errors.New("invalid token")
+	errNotFoundToken = errors.New("token not found")
+	errNotFound      = errors.New("not found")
+	errForbidden     = errors.New("forbidden")
 )
 
 const (
@@ -124,12 +125,12 @@ const (
 )
 
 func (dc *dbCache) getApp(token string) (*meta.Application, error) {
-	buf, err := cu.AesDecrypt(token, []byte(util.AesKey))
+	buf, err := aes.Decrypt(token, util.AesKey)
 	if err != nil {
 		return nil, errors.Annotatef(errInvalidToken, err.Error())
 	}
 
-	id, n := binary.Varint(buf)
+	id, n := binary.Varint([]byte(buf))
 	if n < 1 {
 		return nil, fmt.Errorf("invalid token %s", token)
 	}
@@ -327,8 +328,8 @@ func (dc *dbCache) insertDB(s *sql.Stmt, arg []interface{}) (id int64, err error
 	return
 }
 
-func (dc *dbCache) insertStats(iface, app int64, count int, cost int64) error {
-	id, err := dc.insertDB(dc.instStats, []interface{}{iface, app, count, cost, time.Now().Format("2006-01-02 15:04"), count, cost})
+func (dc *dbCache) insertStats(iface, app int64, count, errs int, cost int64) error {
+	id, err := dc.insertDB(dc.instStats, []interface{}{iface, app, count, errs, cost, time.Now().Format("2006-01-02 15:04"), count, cost})
 	if err != nil {
 		return errors.Trace(err)
 	}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/dearcode/crab/http/server"
 	"github.com/dearcode/crab/log"
-	cu "github.com/dearcode/crab/util"
+	"github.com/dearcode/crab/util/aes"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/rbac/config"
@@ -172,12 +172,12 @@ func RoleUpdate(appID, roleID int64, name, comments string) error {
 
 //RoleGetWithToken 根据token查询role.
 func RoleGetWithToken(token, email string) ([]meta.Role, error) {
-	buf, err := cu.AesDecrypt(token, []byte(config.RBAC.Server.Key))
+	buf, err := aes.Decrypt(token, config.RBAC.Server.Key)
 	if err != nil {
 		return nil, err
 	}
 
-	id, n := binary.Varint(buf)
+	id, n := binary.Varint([]byte(buf))
 	if n < 1 {
 		return nil, fmt.Errorf("invalid token %s", token)
 	}

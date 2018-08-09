@@ -9,7 +9,7 @@ import (
 var (
 	// Repeater 配置信息.
 	Repeater   repeaterConfig
-	configPath = flag.String("c", "./config/repeater.ini", "config file")
+	configPath = flag.String("repeater_cfg", "./config/repeater.ini", "config file")
 )
 
 type serverConfig struct {

@@ -58,7 +58,7 @@ func (r *repeater) validateValue(v *meta.Variable, val string) (bool, error) {
 func (r *repeater) GetInterface(req *http.Request, id string) (app *meta.Application, iface *meta.Interface, err error) {
 	token := req.Header.Get("Token")
 	if token == "" {
-		return nil, nil, fmt.Errorf("need Token in Header")
+		return nil, nil, errors.Trace(errNotFoundToken)
 	}
 
 	log.Infof("%s requset token is:%v", id, token)
@@ -155,37 +155,57 @@ func (r *repeater) Validate(req *http.Request, iface *meta.Interface) error {
 	return nil
 }
 
-//buildRequest 生成后端请求request,清理无用的请求参数
-func (r *repeater) buildRequest(id string, iface *meta.Interface, req *http.Request) error {
-	backend := iface.Backend
-
-	if iface.Service.Version == 1 {
-		apps, err := bs.getMicroAPPs(iface.Backend)
-		if err != nil {
-			return errors.Trace(err)
-		}
-		idx := time.Now().UnixNano() % int64(len(apps))
-		backend = fmt.Sprintf("http://%s:%d%s", apps[idx].Host, apps[idx].Port, iface.Path)
-		log.Infof("faas backend url:%v", backend)
-	} else {
-		//取url中接口名后剩余部分, 可能是RESTful请求
-		if idx := strings.Index(req.URL.Path, iface.Path); idx > 0 {
-			if path := req.URL.Path[idx+len(iface.Path):]; len(path) > 1 {
-				if strings.HasSuffix(backend, "/") {
-					backend += path[1:]
-				} else {
-					backend += path
-				}
-			}
-		}
+func (r *repeater) microAPPBackendURL(iface *meta.Interface, req *http.Request) (string, error) {
+	apps, err := bs.getMicroAPPs(iface.Backend)
+	if err != nil {
+		return "", errors.Trace(err)
 	}
-
+	idx := time.Now().UnixNano() % int64(len(apps))
+	backend := fmt.Sprintf("http://%s:%d%s", apps[idx].Host, apps[idx].Port, iface.Path)
 	//生成url参数
 	if args := req.URL.Query().Encode(); args != "" {
 		backend += "?" + args
 	}
 
-	var err error
+	return backend, nil
+}
+
+//backendURL 如果是faas的，随机访问后端地址， 如果是传统的走域名直接访问.
+func (r *repeater) backendURL(iface *meta.Interface, req *http.Request) (string, error) {
+	if iface.Service.Version == 1 {
+		return r.microAPPBackendURL(iface, req)
+	}
+
+	uri := req.RequestURI
+	//跳过一级目录
+	if idx := strings.Index(uri[1:], "/"); idx > 0 {
+		uri = uri[idx+2:]
+	}
+
+	//清理二级目录
+	uri = strings.TrimPrefix(uri, iface.Path)
+	if len(uri) < 2 {
+		return iface.Backend, nil
+	}
+
+	if len(uri) > 2 && uri[1] == '?' {
+		uri = uri[1:]
+	}
+
+	if uri[0] == '/' && iface.Backend[len(iface.Backend)-1] == '/' {
+		uri = uri[1:]
+	}
+
+	return iface.Backend + uri, nil
+}
+
+//buildRequest 生成后端请求request,清理无用的请求参数
+func (r *repeater) buildRequest(id string, iface *meta.Interface, req *http.Request) error {
+	backend, err := r.backendURL(iface, req)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
 	if req.URL, err = url.Parse(backend); err != nil {
 		return errors.Trace(err)
 	}
@@ -199,6 +219,36 @@ func (r *repeater) buildRequest(id string, iface *meta.Interface, req *http.Requ
 	return nil
 }
 
+func (r *repeater) requestBody(id string, req *http.Request) error {
+	//接口接收到请求的详细信息
+	buf, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		return errors.Trace(err)
+	}
+
+	log.Infof("%s data:%v", id, string(buf))
+	//再还回去
+	req.Body = ioutil.NopCloser(bytes.NewReader(buf))
+
+	return nil
+}
+
+func (r *repeater) writeError(w http.ResponseWriter, err error) {
+	status := http.StatusInternalServerError
+
+	switch errors.Cause(err) {
+	case errForbidden:
+		status = http.StatusForbidden
+	case errInvalidPath, errInvalidToken, errNotFound:
+		status = http.StatusNotFound
+	case errNotFoundToken:
+		status = http.StatusUnauthorized
+	}
+
+	w.WriteHeader(status)
+	w.Write([]byte(err.Error()))
+}
+
 //ServeHTTP 入口
 func (r *repeater) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	id := uuid.String()
@@ -208,52 +258,43 @@ func (r *repeater) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if e := recover(); e != nil {
 			log.Errorf("%s recover %v", id, e)
 			log.Errorf("%s", debug.Stack())
-			util.SendResponse(w, http.StatusBadRequest, "%v", e)
+			r.writeError(w, fmt.Errorf("%v", e))
 		}
 	}()
 
 	log.Infof("%s url:%v method:%v", id, req.URL, req.Method)
-	//接口接收到请求的详细信息
-	buf, err := ioutil.ReadAll(req.Body)
-	if err != nil {
-		log.Errorf("%s getBody error:%s, req:%v", id, errors.ErrorStack(err), *req)
+
+	//解析并记录请求body
+	if err := r.requestBody(id, req); err != nil {
+		log.Errorf("%v read body error:%v", id, errors.ErrorStack(err))
+		r.writeError(w, err)
 		return
 	}
-
-	log.Infof("%s data:%v", id, string(buf))
-	//再还回去
-	req.Body = ioutil.NopCloser(bytes.NewReader(buf))
 
 	//查找对应接口信息
 	app, iface, err := r.GetInterface(req, id)
 	if err != nil {
-		if errors.Cause(err) == errForbidden {
-			log.Infof("%s forbidden", id)
-			w.WriteHeader(http.StatusForbidden)
-			return
-		}
 		log.Errorf("%s error:%s", id, errors.ErrorStack(err))
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		r.writeError(w, err)
 		return
 	}
-	log.Infof("%s app:%s interface:%s path:%s", id, app.Name, iface.Name, iface.Path)
+	log.Infof("%s app:%s email:%s, interface:%s email:%s", id, app.Name, app.Email, iface.Name, iface.Email)
 
 	//验证输入参数
 	if err = r.Validate(req, iface); err != nil {
-		log.Errorf("%s app email:%v, iface email:%v validate error:%s", id, app.Email, iface.Email, errors.ErrorStack(err))
-		util.SendResponse(w, http.StatusBadRequest, err.Error())
+		log.Errorf("%s validate error:%s", id, errors.ErrorStack(err))
+		r.writeError(w, err)
 		return
 	}
 	log.Infof("%s validate success", id)
 
 	//生成后端请求
 	if err = r.buildRequest(id, iface, req); err != nil {
-		log.Errorf("%s app email:%v, iface email:%v buildRequest error:%s", id, app.Email, iface.Email, errors.ErrorStack(err))
-		util.SendResponse(w, http.StatusInternalServerError, err.Error())
+		log.Errorf("%s build request error:%s", id, errors.ErrorStack(err))
+		r.writeError(w, err)
 		return
 	}
-	log.Infof("%s backUrl:%s method:%s begin", id, req.URL, iface.Method)
+	log.Infof("%s backend url:%s method:%s begin", id, req.URL, iface.Method)
 
 	b := time.Now()
 	rb, code, err := util.DoRequest(req)
@@ -261,18 +302,17 @@ func (r *repeater) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		stats.failed(id, app.ID, iface.ID, err.Error())
-		log.Errorf("%s app email:%v,iface email:%v millisecond:%d end error:%s", id, app.Email, iface.Email, cost, err.Error())
-		util.SendResponse(w, http.StatusInternalServerError, err.Error())
+		log.Errorf("%s used:%dms end error:%s", id, cost, err.Error())
+		r.writeError(w, err)
 		return
 	}
 
 	if code != http.StatusOK {
 		stats.failed(id, app.ID, iface.ID, fmt.Sprintf("invalid http status:%v", code))
-		log.Errorf("%s app email:%v,iface email:%v millisecond:%d end failed, code:%d", id, app.Email, iface.Email, cost, code)
+		log.Errorf("%s used:%dms end failed, code:%d", id, cost, code)
 	} else {
 		stats.success(app.ID, iface.ID, int64(cost))
-
-		log.Infof("%s %d end success, code:%d", id, cost, code)
+		log.Infof("%s used:%dms end success, response:%s", id, cost, rb)
 	}
 
 	w.WriteHeader(code)

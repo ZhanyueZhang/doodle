@@ -5,7 +5,6 @@ import (
 	"github.com/dearcode/crab/http/server"
 	"github.com/dearcode/crab/log"
 	"github.com/dearcode/crab/orm"
-	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/manager/config"
 	"github.com/dearcode/doodle/util/rbac"
@@ -28,60 +27,52 @@ func ServerInit() error {
 
 	httpClient = client.New().SetLogger(log.GetLogger())
 
-	if err := server.RegisterPath(&domain{}, "/domain"); err != nil {
-		return errors.Trace(err)
-	}
+	server.RegisterPathMust(&serverCfg{}, "/config")
+	server.RegisterPathMust(&account{}, "/account")
 
-	if err := server.RegisterPath(&account{}, "/account"); err != nil {
-		return errors.Trace(err)
-	}
+	server.RegisterPrefixMust(&debug{}, "/debug/pprof/")
+	server.RegisterPrefixMust(&static{}, "/static/")
+	server.RegisterPrefixMust(&static{}, "/")
 
-	if err := server.RegisterPrefix(&debug{}, "/debug/pprof/"); err != nil {
-		return errors.Trace(err)
-	}
+	server.RegisterPathMust(&resource{}, "/resource/")
+	server.RegisterPathMust(&resourceInfo{}, "/resource/info")
+	server.RegisterPathMust(&resourceRole{}, "/resource/role/")
 
-	server.RegisterPrefix(&static{}, "/static/")
-	server.RegisterPrefix(&static{}, "/")
+	server.RegisterPathMust(&cluster{}, "/cluster/")
+	server.RegisterPathMust(&clusterInfo{}, "/cluster/info/")
+	server.RegisterPathMust(&clusterNode{}, "/cluster/node/")
 
-	server.RegisterPath(&resource{}, "/resource/")
-	server.RegisterPath(&resourceInfo{}, "/resource/info")
-	server.RegisterPath(&resourceRole{}, "/resource/role/")
+	server.RegisterPathMust(&role{}, "/role/")
+	server.RegisterPathMust(&roleUser{}, "/role/user/")
+	server.RegisterPathMust(&roleInfo{}, "/role/info/")
+	server.RegisterPathMust(&userRole{}, "/user/role/")
 
-	server.RegisterPath(&cluster{}, "/cluster/")
-	server.RegisterPath(&clusterInfo{}, "/cluster/info/")
-	server.RegisterPath(&clusterNode{}, "/cluster/node/")
+	server.RegisterPathMust(&serviceInfo{}, "/service/info/")
+	server.RegisterPathMust(&service{}, "/service/")
 
-	server.RegisterPath(&role{}, "/role/")
-	server.RegisterPath(&roleUser{}, "/role/user/")
-	server.RegisterPath(&roleInfo{}, "/role/info/")
-	server.RegisterPath(&userRole{}, "/user/role/")
+	server.RegisterPathMust(&nodes{}, "/nodes/")
 
-	server.RegisterPath(&serviceInfo{}, "/service/info/")
-	server.RegisterPath(&service{}, "/service/")
+	server.RegisterPathMust(&interfaceAction{}, "/interface/")
+	server.RegisterPathMust(&interfaceRegister{}, "/interface/register/")
+	server.RegisterPathMust(&interfaceRun{}, "/interface/run")
+	server.RegisterPathMust(&interfaceInfo{}, "/interface/info")
+	server.RegisterPathMust(&interfaceDeploy{}, "/interface/deploy")
 
-	server.RegisterPath(&nodes{}, "/nodes/")
+	server.RegisterPathMust(&variableInfo{}, "/variable/infos")
+	server.RegisterPathMust(&variable{}, "/variable/")
 
-	server.RegisterPath(&interfaceAction{}, "/interface/")
-	server.RegisterPath(&interfaceRegister{}, "/interface/register/")
-	server.RegisterPath(&interfaceRun{}, "/interface/run")
-	server.RegisterPath(&interfaceInfo{}, "/interface/info")
-	server.RegisterPath(&interfaceDeploy{}, "/interface/deploy")
+	server.RegisterPathMust(&appInfo{}, "/application/info")
+	server.RegisterPathMust(&appInfos{}, "/application/infos")
+	server.RegisterPathMust(&app{}, "/application/")
 
-	server.RegisterPath(&variableInfo{}, "/variable/infos")
-	server.RegisterPath(&variable{}, "/variable/")
+	server.RegisterPathMust(&relation{}, "/relation/")
 
-	server.RegisterPath(&appInfo{}, "/application/info")
-	server.RegisterPath(&appInfos{}, "/application/infos")
-	server.RegisterPath(&app{}, "/application/")
+	server.RegisterPathMust(&docs{}, "/docs/")
 
-	server.RegisterPath(&relation{}, "/relation/")
-
-	server.RegisterPath(&docs{}, "/docs/")
-
-	server.RegisterPath(&statsSumAction{}, "/stats/sum/")
-	server.RegisterPath(&statsTopApplication{}, "/stats/top/app/")
-	server.RegisterPath(&statsTopInterface{}, "/stats/top/iface/")
-	server.RegisterPath(&statsErrors{}, "/stats/error/")
+	server.RegisterPathMust(&statsSumAction{}, "/stats/sum/")
+	server.RegisterPathMust(&statsTopApplication{}, "/stats/top/app/")
+	server.RegisterPathMust(&statsTopInterface{}, "/stats/top/iface/")
+	server.RegisterPathMust(&statsErrors{}, "/stats/error/")
 
 	return nil
 }

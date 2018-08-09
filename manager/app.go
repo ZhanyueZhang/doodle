@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/dearcode/crab/log"
-	cu "github.com/dearcode/crab/util"
+	"github.com/dearcode/crab/util/aes"
 	"github.com/juju/errors"
 
 	"github.com/dearcode/doodle/meta"
@@ -247,7 +247,7 @@ func (a *app) POST(w http.ResponseWriter, r *http.Request) {
 	buf := make([]byte, 8)
 	binary.PutVarint(buf, id)
 
-	token, err := cu.AesEncrypt(buf, []byte(util.AesKey))
+	token, err := aes.Encrypt(string(buf), util.AesKey)
 	if err != nil {
 		log.Errorf("AesEncrypt req:%+v, error:%s", r, errors.ErrorStack(err))
 		util.SendResponse(w, http.StatusInternalServerError, err.Error())

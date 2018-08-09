@@ -21,6 +21,7 @@ type entry struct {
 	App   int64
 	Iface int64
 	Count int
+	Err   int
 	Time  int64
 }
 
@@ -29,41 +30,48 @@ type ifaceEntry struct {
 }
 
 type statsCache struct {
-	ies map[int64]*ifaceEntry
-	ees []*errorEntry
+	access map[int64]*ifaceEntry
+	errors []*errorEntry
 	sync.Mutex
 }
 
 func newStatsCache() *statsCache {
-	return &statsCache{ies: make(map[int64]*ifaceEntry)}
+	return &statsCache{access: make(map[int64]*ifaceEntry)}
 }
 
-//failed 添加异常记录
-func (s *statsCache) failed(id string, app, iface int64, log string) {
-	s.Lock()
-	defer s.Unlock()
-
-	s.ees = append(s.ees, &errorEntry{id, app, iface, log, time.Now().Add(time.Hour * 8)})
-}
-
-//success 添加记录, 合并同一app调用同一接口的统计
 func (s *statsCache) success(app, iface, tm int64) {
+	s.add("", app, iface, tm, true, "")
+}
+
+func (s *statsCache) failed(id string, app, iface int64, msg string) {
+	s.add(id, app, iface, 0, false, msg)
+}
+
+//add 添加记录, 合并同一app调用同一接口的统计
+func (s *statsCache) add(id string, app, iface, tm int64, success bool, msg string) {
 	s.Lock()
 	defer s.Unlock()
 
-	ie, ok := s.ies[iface]
+	ie, ok := s.access[iface]
 	if !ok {
 		ie = &ifaceEntry{apps: make(map[int64]*entry)}
-		s.ies[iface] = ie
+		s.access[iface] = ie
 	}
 
 	e, ok := ie.apps[app]
 	if !ok {
-		e = &entry{app, iface, 0, 0}
+		e = &entry{
+			App:   app,
+			Iface: iface,
+		}
 		ie.apps[app] = e
 	}
 
 	e.Count++
+	if !success {
+		s.errors = append(s.errors, &errorEntry{id, app, iface, msg, time.Now().Add(time.Hour * 8)})
+		e.Err++
+	}
 	e.Time += tm
 	log.Debugf("new log:%+v", *e)
 }
@@ -75,12 +83,12 @@ func (s *statsCache) entrys() []entry {
 
 	var es []entry
 
-	for ii, ie := range s.ies {
+	for ii, ie := range s.access {
 		for ai, e := range ie.apps {
 			es = append(es, *e)
 			delete(ie.apps, ai)
 		}
-		delete(s.ies, ii)
+		delete(s.access, ii)
 	}
 
 	return es
@@ -91,9 +99,9 @@ func (s *statsCache) errorEntrys() []*errorEntry {
 	s.Lock()
 	defer s.Unlock()
 
-	ees := s.ees
-	s.ees = []*errorEntry{}
-	return ees
+	errs := s.errors
+	s.errors = []*errorEntry{}
+	return errs
 }
 
 func (s *statsCache) run() {
@@ -101,7 +109,7 @@ func (s *statsCache) run() {
 	for {
 		<-t.C
 		for _, e := range s.entrys() {
-			if err := dc.insertStats(e.Iface, e.App, e.Count, e.Time); err != nil {
+			if err := dc.insertStats(e.Iface, e.App, e.Count, e.Err, e.Time); err != nil {
 				log.Errorf("insertStats %v error:%v", e, err.Error())
 			}
 		}
